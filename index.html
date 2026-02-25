@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 財政預算案 稅務計算機</title>
+    <style>
+        /* 採用 Scope CSS 設計，避免與你 Blog 原有主題衝突 */
+        .tax-calc-wrapper { 
+            font-family: 'Helvetica Neue', Arial, 'Microsoft JhengHei', sans-serif; 
+            color: #333; 
+            line-height: 1.6;
+            box-sizing: border-box;
+            background-color: transparent;
+        }
+        .tax-calc-container { 
+            width: 100%; 
+            max-width: 850px; 
+            margin: 0 auto; 
+            background: #fff; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            border: 1px solid #eaeaea;
+            box-sizing: border-box;
+        }
+        .tax-calc-container h2.main-title { text-align: center; color: #2c3e50; margin-bottom: 5px; font-size: 1.8em; font-weight: bold;}
+        .tax-calc-container .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-size: 0.95em; }
+        .tax-calc-container .section-title { font-size: 1.2em; color: #2980b9; border-bottom: 2px solid #3498db; padding-bottom: 8px; margin-top: 35px; margin-bottom: 20px; font-weight: bold;}
+        .tax-calc-container .form-group { margin-bottom: 18px; display: flex; flex-direction: column; }
+        .tax-calc-container .form-group label { margin-bottom: 6px; font-weight: bold; color: #2c3e50; font-size: 1em;}
+        .tax-calc-container .form-group small { color: #7f8c8d; margin-bottom: 8px; font-size: 0.85em; line-height: 1.4; }
+        .tax-calc-container input[type="number"], .tax-calc-container select { padding: 12px; border: 1px solid #dcdde1; border-radius: 6px; font-size: 1em; background-color: #fdfdfd; transition: 0.3s; width: 100%; box-sizing: border-box;}
+        .tax-calc-container input[type="number"]:focus, .tax-calc-container select:focus { border-color: #3498db; outline: none; box-shadow: 0 0 5px rgba(52,152,219,0.3);}
+        .tax-calc-container .radio-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px; }
+        .tax-calc-container .radio-group label { background: #f8f9fa; padding: 10px 15px; border-radius: 6px; border: 1px solid #dcdde1; cursor: pointer; transition: 0.2s; font-weight: normal; margin:0;}
+        .tax-calc-container .radio-group label:hover { background: #e8f4f8; }
+        
+        .tax-calc-container .btn-submit { display: block; width: 100%; padding: 18px; background-color: #e74c3c; color: #fff; border: none; border-radius: 8px; font-size: 1.3em; font-weight: bold; cursor: pointer; margin-top: 40px; box-shadow: 0 4px 6px rgba(231, 76, 60, 0.3); transition: 0.3s; }
+        .tax-calc-container .btn-submit:hover { background-color: #c0392b; transform: translateY(-2px); }
+        
+        /* 結果區塊樣式 */
+        .tax-calc-container .result-box { display: none; margin-top: 40px; padding: 25px; background-color: #f8fcfb; border: 2px solid #1abc9c; border-radius: 10px; }
+        .tax-calc-container .result-item { font-size: 1.05em; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f2f6; padding-bottom: 8px;}
+        .tax-calc-container .result-item:last-child { border-bottom: none; }
+        .tax-calc-container .result-item span { font-weight: bold; color: #2c3e50; font-family: monospace; font-size: 1.15em; }
+        .tax-calc-container .nci-row { color: #2980b9; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #bdc3c7; font-weight: bold; }
+        .tax-calc-container .final-tax { font-size: 1.3em; margin-top: 20px; color: #c0392b; border-top: 2px solid #c0392b; padding-top: 20px; font-weight: bold;}
+        .tax-calc-container .final-tax span { color: #c0392b; font-size: 1.4em; }
+        
+        .tax-calc-container .saving-banner { background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; padding: 20px; border-radius: 8px; text-align: center; font-size: 1.2em; font-weight: bold; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3); animation: popIn 0.5s ease-out; }
+        .tax-calc-container .saving-banner span { font-size: 1.6em; display: block; margin-top: 8px; }
+        @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .tax-calc-container .disclaimer { text-align: left; font-size: 0.85em; color: #7f8c8d; margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px; line-height: 1.6; }
+
+        /* 手機版排版優化 */
+        @media (max-width: 600px) {
+            .tax-calc-container .result-item { flex-direction: column; align-items: flex-start; }
+            .tax-calc-container .result-item span { margin-top: 5px; font-size: 1.3em;}
+            .tax-calc-container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="tax-calc-wrapper">
+<div class="tax-calc-container">
+    <h2 class="main-title">2026/27 薪俸稅計算機</h2>
+    <div class="subtitle">完全對接 IRD 評稅標準 · 自動對比預算案慳稅額</div>
+
+    <!-- 1. 基本資料 -->
+    <div class="section-title">1. 基本資料</div>
+    <div class="form-group">
+        <label>報稅身分：</label>
+        <div class="radio-group">
+            <label><input type="radio" name="marital_status" value="single" checked onchange="toggleSingleParent()"> 單身</label>
+            <label><input type="radio" name="marital_status" value="married_sole" onchange="toggleSingleParent()"> 已婚 (配偶無收入/合併評稅)</label>
+            <label><input type="radio" name="marital_status" value="married_sep" onchange="toggleSingleParent()"> 已婚 (雙方有收入/分開評稅)</label>
+        </div>
+    </div>
+
+    <!-- 2. 入息 -->
+    <div class="section-title">2. 入息 (HK$)</div>
+    <div class="form-group">
+        <label>課稅年度收入</label>
+        <small>包括薪金、工資、佣金、花紅等 (不包括遣散費)</small>
+        <input type="number" id="income" placeholder="0" min="0">
+    </div>
+    <div class="form-group">
+        <label>僱主提供的居所 (房屋福利)</label>
+        <select id="housing_type">
+            <option value="0">無提供 / 只提供現金津貼 (請將津貼加進上方收入)</option>
+            <option value="0.10">有提供：住宅單位 / 服務式住宅 (按入息淨額 10% 計租值)</option>
+            <option value="0.08">有提供：酒店兩間房 (按入息淨額 8% 計租值)</option>
+            <option value="0.04">有提供：酒店一間房 (按入息淨額 4% 計租值)</option>
+        </select>
+    </div>
+
+    <!-- 3. 扣除項目 -->
+    <div class="section-title">3. 各項扣除開支</div>
+    <div class="form-group">
+        <label>產生該評稅入息而招致的支出及開支</label>
+        <small>必須是完全及純粹為產生入息而必須招致的開支 (不包括通勤費)</small>
+        <input type="number" id="expenses" placeholder="0" min="0">
+    </div>
+    <div class="form-group">
+        <label>課稅年度強積金供款</label>
+        <small>系統最高扣除上限：$18,000</small>
+        <input type="number" id="mpf" placeholder="0" min="0">
+    </div>
+    <div class="form-group">
+        <label>個人進修開支</label>
+        <small>系統最高扣除上限：$100,000</small>
+        <input type="number" id="education" placeholder="0" min="0">
+    </div>
+    <div class="form-group">
+        <label>認可慈善捐款</label>
+        <small>系統將自動限制為「入息減開支後」的 35%</small>
+        <input type="number" id="donation" placeholder="0" min="0">
+    </div>
+    <div class="form-group">
+        <label>居所貸款利息</label>
+        <small>系統最高扣除上限：$100,000</small>
+        <input type="number" id="home_loan" placeholder="0" min="0">
+    </div>
+    <div class="form-group">
+        <label>合資格自願醫保 (VHIS) 保費總額</label>
+        <small>為本人或親屬購買，每名受保人上限 $8,000 (請直接填寫可扣稅總保費)</small>
+        <input type="number" id="vhis" placeholder="0" min="0">
+    </div>
+    <div class="form-group">
+        <label>長者住宿照顧開支</label>
+        <small>與供養父母免稅額不能同時申索同一長者 (最高扣除額 $110,000)</small>
+        <input type="number" id="elderly_care" placeholder="0" min="0">
+    </div>
+
+    <!-- 4. 免稅額 -->
+    <div class="section-title">4. 家庭部份免稅額</div>
+    <div class="form-group" id="single_parent_group">
+        <label>是否申索單親免稅額？</label>
+        <div class="radio-group">
+            <label><input type="radio" name="single_parent" value="no" checked> 否</label>
+            <label><input type="radio" name="single_parent" value="yes"> 是</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>供養子女數目</label>
+        <small>每名 $140,000</small>
+        <input type="number" id="children" placeholder="0" min="0" value="0">
+    </div>
+    <div class="form-group">
+        <label>供養 60歲或以上父母/祖父母 (非同住)</label>
+        <small>每名基本免稅額 $55,000</small>
+        <input type="number" id="parents_not_live" placeholder="0" min="0" value="0">
+    </div>
+    <div class="form-group">
+        <label>供養 60歲或以上父母/祖父母 (全年同住)</label>
+        <small>每名基本 $55,000 + 額外 $55,000 = $110,000</small>
+        <input type="number" id="parents_live" placeholder="0" min="0" value="0">
+    </div>
+
+    <button class="btn-submit" onclick="calculateTax()">一鍵計算稅款</button>
+
+    <!-- 結果顯示區 -->
+    <div class="result-box" id="result_box">
+        
+        <div class="saving-banner" id="saving_banner" style="display:none;">
+            受惠於 2026/27 預算案，你節省了稅款：
+            <span id="res_saved">HK$ 0</span>
+        </div>
+
+        <h3 style="text-align:center; color:#2c3e50; margin-top:0;">評稅通知書 (預覽)</h3>
+        
+        <div class="result-item" style="color:#7f8c8d; font-size: 0.9em; background:#ecf0f1; padding:10px; border-radius:5px; border-bottom:none;">
+            【比較】舊制實際應繳稅款 (未加免稅額前)：<span id="res_old_tax">0</span>
+        </div>
+
+        <div class="result-item" style="margin-top:15px;">總入息 (連同房屋租值)：<span id="res_total_income">0</span></div>
+        <div class="result-item">減去：扣除項目總額：<span id="res_deductions">0</span></div>
+        <div class="result-item" style="background-color: #f1f8ff; padding: 5px;">入息淨額 (Net Income)：<span id="res_net_income">0</span></div>
+        <div class="result-item">減去：免稅額總額：<span id="res_allowances">0</span></div>
+        
+        <div class="result-item nci-row">
+            應課稅入息實額 (NCI)：<span id="res_nci">0</span>
+        </div>
+        
+        <div class="result-item" style="color: #7f8c8d; font-size: 0.9em; margin-top:15px;">按累進稅率計算稅款：<span id="res_prog_tax">0</span></div>
+        <div class="result-item" style="color: #7f8c8d; font-size: 0.9em;">按標準稅率計算稅款：<span id="res_std_tax">0</span></div>
+        
+        <div class="result-item" style="margin-top:15px; font-weight:bold;">
+            評稅稅款 (Tax Payable)：<span id="res_tax_before">0</span>
+        </div>
+        <div class="result-item" style="color:#16a085;">
+            減去：稅款寬減 (100%，上限 $3,000)：<span id="res_reduction">- 0</span>
+        </div>
+        
+        <div class="result-item final-tax" style="border-bottom:none;">
+            應繳稅款總額：<span id="res_final_tax">0</span>
+        </div>
+    </div>
+
+    <div class="disclaimer">
+        <strong>⚠️ 稅務準則聲明：</strong><br>
+        1. <strong>捐款上限</strong>：系統已按 IRD 規則，嚴格限制扣除額上限為 (入息 - 開支) 的 35%。<br>
+        2. <strong>租值計法</strong>：嚴格按照 (入息 - 開支) 乘以相應比率(4%/8%/10%)計算。<br>
+        3. <strong>標準稅兩級制</strong>：首 500 萬入息淨額按 15% 計，餘額按 16% 計。<br>
+        * 以上結果僅供預算參考，最終評稅結果以香港稅務局 (IRD) 為準。
+    </div>
+</div>
+</div>
+
+<script>
+    function toggleSingleParent() {
+        const maritalStatus = document.querySelector('input[name="marital_status"]:checked').value;
+        const singleParentGroup = document.getElementById('single_parent_group');
+        if (maritalStatus === 'single' || maritalStatus === 'married_sep') {
+            singleParentGroup.style.display = 'flex';
+        } else {
+            singleParentGroup.style.display = 'none';
+            document.querySelector('input[name="single_parent"][value="no"]').checked = true;
+        }
+    }
+
+    function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
+    function fmt(num) { return Math.max(0, Math.round(num)).toLocaleString('en-US'); }
+
+    // 累進稅率計算引擎 (2%, 6%, 10%, 14%, 17%)
+    function getProgressiveTax(nci) {
+        let tax = 0;
+        if (nci > 0) { let s1 = Math.min(nci, 50000); tax += s1 * 0.02; nci -= s1; }
+        if (nci > 0) { let s2 = Math.min(nci, 50000); tax += s2 * 0.06; nci -= s2; }
+        if (nci > 0) { let s3 = Math.min(nci, 50000); tax += s3 * 0.10; nci -= s3; }
+        if (nci > 0) { let s4 = Math.min(nci, 50000); tax += s4 * 0.14; nci -= s4; }
+        if (nci > 0) { tax += nci * 0.17; }
+        return tax;
+    }
+
+    // 標準稅率計算引擎 (兩級制 15%, 16%)
+    function getStandardTax(netIncome) {
+        if (netIncome > 5000000) {
+            return (5000000 * 0.15) + ((netIncome - 5000000) * 0.16);
+        }
+        return netIncome * 0.15;
+    }
+
+    function calculateTax() {
+        const maritalStatus = document.querySelector('input[name="marital_status"]:checked').value;
+        const isSingleParent = document.querySelector('input[name="single_parent"]:checked').value === 'yes';
+        const children = getVal('children');
+        const parentsNotLive = getVal('parents_not_live');
+        const parentsLive = getVal('parents_live');
+
+        let income = getVal('income');
+        let expenses = getVal('expenses');
+        
+        // 1. 計算房屋租值 (Rental Value)
+        let housingRate = parseFloat(document.getElementById('housing_type').value);
+        let incomeMinusExp = Math.max(0, income - expenses);
+        let rentalValue = housingRate > 0 ? incomeMinusExp * housingRate : 0;
+        let totalIncome = income + rentalValue;
+
+        // 2. 計算扣除項目 (含自動封頂機制)
+        let mpf = Math.min(getVal('mpf'), 18000);
+        let education = Math.min(getVal('education'), 100000);
+        let homeLoan = Math.min(getVal('home_loan'), 100000);
+        let vhis = getVal('vhis'); 
+        
+        // 慈善捐款上限：扣除開支後的入息的 35%
+        let maxDonation = incomeMinusExp * 0.35;
+        let donation = Math.min(getVal('donation'), maxDonation);
+        
+        let basicDeductions = mpf + education + donation + homeLoan + expenses + vhis;
+
+        // ==========================================
+        // 【舊制計算引擎】(預算案前)
+        // ==========================================
+        let oldElderlyCare = Math.min(getVal('elderly_care'), 100000);
+        let oldTotalDeductions = basicDeductions + oldElderlyCare;
+        
+        let oldAllowances = 0;
+        if (maritalStatus === 'married_sole') { oldAllowances += 264000; } 
+        else { oldAllowances += 132000; if (isSingleParent) oldAllowances += 132000; }
+        oldAllowances += (children * 130000);
+        oldAllowances += (parentsNotLive * 50000);
+        oldAllowances += (parentsLive * 100000);
+
+        let oldNetIncome = Math.max(0, totalIncome - oldTotalDeductions);
+        let oldNci = Math.max(0, oldNetIncome - oldAllowances);
+        
+        let oldProgTax = getProgressiveTax(oldNci);
+        let oldStdTax = getStandardTax(oldNetIncome);
+        let oldTaxBefore = Math.min(oldProgTax, oldStdTax);
+        let oldFinalTax = Math.max(0, oldTaxBefore - Math.min(oldTaxBefore, 3000));
+
+        // ==========================================
+        // 【新制計算引擎】(2026/27 預算案後)
+        // ==========================================
+        let newElderlyCare = Math.min(getVal('elderly_care'), 110000);
+        let newTotalDeductions = basicDeductions + newElderlyCare;
+        
+        let newAllowances = 0;
+        if (maritalStatus === 'married_sole') { newAllowances += 290000; } 
+        else { newAllowances += 145000; if (isSingleParent) newAllowances += 145000; }
+        newAllowances += (children * 140000);
+        newAllowances += (parentsNotLive * 55000);
+        newAllowances += (parentsLive * 110000);
+
+        let newNetIncome = Math.max(0, totalIncome - newTotalDeductions);
+        let newNci = Math.max(0, newNetIncome - newAllowances);
+        
+        let newProgTax = getProgressiveTax(newNci);
+        let newStdTax = getStandardTax(newNetIncome);
+        let newTaxBefore = Math.min(newProgTax, newStdTax);
+        let newTaxReduction = Math.min(newTaxBefore, 3000);
+        let newFinalTax = Math.max(0, newTaxBefore - newTaxReduction);
+
+        // ==========================================
+        // 比較差異 (慳稅金額)
+        // ==========================================
+        let taxSaved = Math.max(0, oldFinalTax - newFinalTax);
+
+        // 更新介面 UI
+        document.getElementById('res_total_income').innerText = 'HK$ ' + fmt(totalIncome);
+        document.getElementById('res_deductions').innerText = 'HK$ ' + fmt(newTotalDeductions);
+        document.getElementById('res_net_income').innerText = 'HK$ ' + fmt(newNetIncome);
+        document.getElementById('res_allowances').innerText = 'HK$ ' + fmt(newAllowances);
+        document.getElementById('res_nci').innerText = 'HK$ ' + fmt(newNci);
+        
+        document.getElementById('res_prog_tax').innerText = 'HK$ ' + fmt(newProgTax);
+        document.getElementById('res_std_tax').innerText = 'HK$ ' + fmt(newStdTax);
+        
+        document.getElementById('res_tax_before').innerText = 'HK$ ' + fmt(newTaxBefore);
+        document.getElementById('res_reduction').innerText = '- HK$ ' + fmt(newTaxReduction);
+        
+        document.getElementById('res_final_tax').innerText = 'HK$ ' + fmt(newFinalTax);
+        document.getElementById('res_old_tax').innerText = 'HK$ ' + fmt(oldFinalTax);
+        
+        if (taxSaved > 0) {
+            document.getElementById('res_saved').innerText = 'HK$ ' + fmt(taxSaved);
+            document.getElementById('saving_banner').style.display = 'block';
+        } else {
+            document.getElementById('saving_banner').style.display = 'none';
+        }
+
+        // 顯示結果並向下滾動
+        document.getElementById('result_box').style.display = 'block';
+        document.getElementById('result_box').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+</script>
+</body>
+</html>
