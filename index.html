@@ -6,7 +6,13 @@
     <title>2026 財政預算案 稅務計算機</title>
     <style>
         /* 採用 Scope CSS 設計，避免與你 Blog 原有主題衝突 */
-        .tax-calc-wrapper { 
+        .tax-calc-wrapper {
+            --tc-primary: #F3CA00;
+            --tc-primary-dark: #C9A700;
+            --tc-primary-soft: #FFF8D6;
+            --tc-primary-border: #EFD978;
+            --tc-text-dark: #2c3e50;
+            --tc-text-muted: #6f7b86;
             font-family: 'Helvetica Neue', Arial, 'Microsoft JhengHei', sans-serif; 
             color: #333; 
             line-height: 1.6;
@@ -20,39 +26,40 @@
             background: #fff; 
             padding: 25px; 
             border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            border: 1px solid #eaeaea;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+            border: 1px solid #ece7d1;
             box-sizing: border-box;
         }
-        .tax-calc-container h2.main-title { text-align: center; color: #2c3e50; margin-bottom: 5px; font-size: 1.8em; font-weight: bold;}
-        .tax-calc-container .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-size: 0.95em; }
-        .tax-calc-container .section-title { font-size: 1.2em; color: #2980b9; border-bottom: 2px solid #3498db; padding-bottom: 8px; margin-top: 35px; margin-bottom: 20px; font-weight: bold;}
+        .tax-calc-container h2.main-title { text-align: center; color: var(--tc-text-dark); margin-bottom: 5px; font-size: 1.8em; font-weight: bold;}
+        .tax-calc-container .subtitle { text-align: center; color: var(--tc-text-muted); margin-bottom: 30px; font-size: 0.95em; }
+        .tax-calc-container .section-title { font-size: 1.2em; color: #9E8400; border-bottom: 2px solid var(--tc-primary); padding-bottom: 8px; margin-top: 35px; margin-bottom: 20px; font-weight: bold;}
         .tax-calc-container .form-group { margin-bottom: 18px; display: flex; flex-direction: column; }
-        .tax-calc-container .form-group label { margin-bottom: 6px; font-weight: bold; color: #2c3e50; font-size: 1em;}
-        .tax-calc-container .form-group small { color: #7f8c8d; margin-bottom: 8px; font-size: 0.85em; line-height: 1.4; }
-        .tax-calc-container input[type="number"], .tax-calc-container select { padding: 12px; border: 1px solid #dcdde1; border-radius: 6px; font-size: 1em; background-color: #fdfdfd; transition: 0.3s; width: 100%; box-sizing: border-box;}
-        .tax-calc-container input[type="number"]:focus, .tax-calc-container select:focus { border-color: #3498db; outline: none; box-shadow: 0 0 5px rgba(52,152,219,0.3);}
+        .tax-calc-container .form-group label { margin-bottom: 6px; font-weight: bold; color: var(--tc-text-dark); font-size: 1em;}
+        .tax-calc-container .form-group small { color: var(--tc-text-muted); margin-bottom: 8px; font-size: 0.85em; line-height: 1.4; }
+        .tax-calc-container input[type="number"], .tax-calc-container select { padding: 12px; border: 1px solid #ddd9c7; border-radius: 6px; font-size: 1em; background-color: #fffdf6; transition: 0.3s; width: 100%; box-sizing: border-box;}
+        .tax-calc-container input[type="number"]:focus, .tax-calc-container select:focus { border-color: var(--tc-primary); outline: none; box-shadow: 0 0 0 3px rgba(243,202,0,0.22);}
+        .tax-calc-container input[type="radio"] { accent-color: #C9A700; }
         .tax-calc-container .radio-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px; }
-        .tax-calc-container .radio-group label { background: #f8f9fa; padding: 10px 15px; border-radius: 6px; border: 1px solid #dcdde1; cursor: pointer; transition: 0.2s; font-weight: normal; margin:0;}
-        .tax-calc-container .radio-group label:hover { background: #e8f4f8; }
+        .tax-calc-container .radio-group label { background: #fffdf4; padding: 10px 15px; border-radius: 6px; border: 1px solid #e7dec0; cursor: pointer; transition: 0.2s; font-weight: normal; margin:0;}
+        .tax-calc-container .radio-group label:hover { background: var(--tc-primary-soft); border-color: var(--tc-primary-border); }
         
-        .tax-calc-container .btn-submit { display: block; width: 100%; padding: 18px; background-color: #e74c3c; color: #fff; border: none; border-radius: 8px; font-size: 1.3em; font-weight: bold; cursor: pointer; margin-top: 40px; box-shadow: 0 4px 6px rgba(231, 76, 60, 0.3); transition: 0.3s; }
-        .tax-calc-container .btn-submit:hover { background-color: #c0392b; transform: translateY(-2px); }
+        .tax-calc-container .btn-submit { display: block; width: 100%; padding: 18px; background-color: var(--tc-primary); color: #3a2f00; border: none; border-radius: 8px; font-size: 1.3em; font-weight: bold; cursor: pointer; margin-top: 40px; box-shadow: 0 6px 14px rgba(201, 167, 0, 0.32); transition: 0.3s; }
+        .tax-calc-container .btn-submit:hover { background-color: var(--tc-primary-dark); transform: translateY(-2px); }
         
         /* 結果區塊樣式 */
-        .tax-calc-container .result-box { display: none; margin-top: 40px; padding: 25px; background-color: #f8fcfb; border: 2px solid #1abc9c; border-radius: 10px; }
+        .tax-calc-container .result-box { display: none; margin-top: 40px; padding: 25px; background-color: #fffef8; border: 2px solid var(--tc-primary); border-radius: 10px; }
         .tax-calc-container .result-item { font-size: 1.05em; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f2f6; padding-bottom: 8px;}
         .tax-calc-container .result-item:last-child { border-bottom: none; }
-        .tax-calc-container .result-item span { font-weight: bold; color: #2c3e50; font-family: monospace; font-size: 1.15em; }
-        .tax-calc-container .nci-row { color: #2980b9; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #bdc3c7; font-weight: bold; }
-        .tax-calc-container .final-tax { font-size: 1.3em; margin-top: 20px; color: #c0392b; border-top: 2px solid #c0392b; padding-top: 20px; font-weight: bold;}
-        .tax-calc-container .final-tax span { color: #c0392b; font-size: 1.4em; }
+        .tax-calc-container .result-item span { font-weight: bold; color: var(--tc-text-dark); font-family: monospace; font-size: 1.15em; }
+        .tax-calc-container .nci-row { color: #9E8400; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #d8c982; font-weight: bold; }
+        .tax-calc-container .final-tax { font-size: 1.3em; margin-top: 20px; color: #8C7500; border-top: 2px solid #C9A700; padding-top: 20px; font-weight: bold;}
+        .tax-calc-container .final-tax span { color: #8C7500; font-size: 1.4em; }
         
-        .tax-calc-container .saving-banner { background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; padding: 20px; border-radius: 8px; text-align: center; font-size: 1.2em; font-weight: bold; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3); animation: popIn 0.5s ease-out; }
+        .tax-calc-container .saving-banner { background: linear-gradient(135deg, #F3CA00, #DDB100); color: #3a2f00; padding: 20px; border-radius: 8px; text-align: center; font-size: 1.2em; font-weight: bold; margin-bottom: 25px; box-shadow: 0 6px 14px rgba(201, 167, 0, 0.35); animation: popIn 0.5s ease-out; }
         .tax-calc-container .saving-banner span { font-size: 1.6em; display: block; margin-top: 8px; }
         @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        .tax-calc-container .disclaimer { text-align: left; font-size: 0.85em; color: #7f8c8d; margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px; line-height: 1.6; }
+        .tax-calc-container .disclaimer { text-align: left; font-size: 0.85em; color: var(--tc-text-muted); margin-top: 30px; padding: 15px; background: #fffdf4; border-radius: 8px; line-height: 1.6; border-left: 4px solid var(--tc-primary); }
 
         /* 手機版排版優化 */
         @media (max-width: 600px) {
@@ -172,26 +179,26 @@
 
         <h3 style="text-align:center; color:#2c3e50; margin-top:0;">評稅通知書 (預覽)</h3>
         
-        <div class="result-item" style="color:#7f8c8d; font-size: 0.9em; background:#ecf0f1; padding:10px; border-radius:5px; border-bottom:none;">
+        <div class="result-item" style="color:#6f7b86; font-size: 0.9em; background:#FFF8D6; padding:10px; border-radius:5px; border-bottom:none;">
             【比較】舊制實際應繳稅款 (未加免稅額前)：<span id="res_old_tax">0</span>
         </div>
 
         <div class="result-item" style="margin-top:15px;">總入息 (連同房屋租值)：<span id="res_total_income">0</span></div>
         <div class="result-item">減去：扣除項目總額：<span id="res_deductions">0</span></div>
-        <div class="result-item" style="background-color: #f1f8ff; padding: 5px;">入息淨額 (Net Income)：<span id="res_net_income">0</span></div>
+        <div class="result-item" style="background-color: #FFFBE7; padding: 5px;">入息淨額 (Net Income)：<span id="res_net_income">0</span></div>
         <div class="result-item">減去：免稅額總額：<span id="res_allowances">0</span></div>
         
         <div class="result-item nci-row">
             應課稅入息實額 (NCI)：<span id="res_nci">0</span>
         </div>
         
-        <div class="result-item" style="color: #7f8c8d; font-size: 0.9em; margin-top:15px;">按累進稅率計算稅款：<span id="res_prog_tax">0</span></div>
-        <div class="result-item" style="color: #7f8c8d; font-size: 0.9em;">按標準稅率計算稅款：<span id="res_std_tax">0</span></div>
+        <div class="result-item" style="color: #6f7b86; font-size: 0.9em; margin-top:15px;">按累進稅率計算稅款：<span id="res_prog_tax">0</span></div>
+        <div class="result-item" style="color: #6f7b86; font-size: 0.9em;">按標準稅率計算稅款：<span id="res_std_tax">0</span></div>
         
         <div class="result-item" style="margin-top:15px; font-weight:bold;">
             評稅稅款 (Tax Payable)：<span id="res_tax_before">0</span>
         </div>
-        <div class="result-item" style="color:#16a085;">
+        <div class="result-item" style="color:#9E8400;">
             減去：稅款寬減 (100%，上限 $3,000)：<span id="res_reduction">- 0</span>
         </div>
         
